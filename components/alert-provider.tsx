@@ -34,7 +34,7 @@ export function AlertProvider() {
 
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && hideAlert()}>
-      <AlertDialogContent className="glass-card gap-0 rounded-2xl border-0 p-6 sm:p-7">
+      <AlertDialogContent className="gap-0 rounded-2xl border border-border bg-card p-6 shadow-2xl sm:p-7">
         <div className="flex items-start gap-4">
           <span
             className={cn(
@@ -55,7 +55,7 @@ export function AlertProvider() {
         </div>
         <AlertDialogFooter className="mt-6 flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:space-x-2">
           {showCancel && (
-            <AlertDialogCancel onClick={handleCancel} className="mt-0 bg-background/60">
+            <AlertDialogCancel onClick={handleCancel} className="mt-0">
               {cancelText}
             </AlertDialogCancel>
           )}
