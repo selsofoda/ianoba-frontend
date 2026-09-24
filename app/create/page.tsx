@@ -116,7 +116,7 @@ export default function CreateKeyPage() {
             <CardHeader>
               <CardTitle>Informações da Nova Key</CardTitle>
               <CardDescription>
-                Preencha os dados abaixo para criar uma nova licença. Campos com * são obrigatórios.
+                Preencha os dados abaixo para criar uma nova key. Campos com * são obrigatórios.
               </CardDescription>
             </CardHeader>
             <CardContent>

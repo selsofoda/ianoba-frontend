@@ -15,26 +15,13 @@ export function Loading({ size = "md", className, text }: LoadingProps) {
 
   return (
     <div className={cn("flex flex-col items-center justify-center gap-3", className)}>
-      <div className="relative">
-        <div
-          className={cn(
-            "animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-cyan-500 to-violet-500 bg-clip-border",
-            sizeClasses[size],
-          )}
-        >
-          <div className="h-full w-full rounded-full bg-background"></div>
-        </div>
-        <div
-          className={cn(
-            "absolute inset-0 animate-spin rounded-full border-2 border-transparent bg-gradient-to-l from-violet-500 to-cyan-500 bg-clip-border opacity-60",
-            sizeClasses[size],
-          )}
-          style={{ animationDirection: "reverse", animationDuration: "1.5s" }}
-        >
-          <div className="h-full w-full rounded-full bg-background"></div>
-        </div>
-      </div>
-      {text && <p className="text-sm text-muted-foreground animate-pulse">{text}</p>}
+      <div
+        className={cn(
+          "animate-spin rounded-full border-2 border-[#222630] border-t-white",
+          sizeClasses[size]
+        )}
+      />
+      {text && <p className="text-xs text-muted-foreground font-mono">{text}</p>}
     </div>
   )
 }

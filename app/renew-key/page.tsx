@@ -56,13 +56,13 @@ export default function RenewKeyPage() {
           if (response.error.includes("Nenhuma key encontrada")) {
             alert.error(
               "Usuário Não Encontrado",
-              `Não foi encontrada nenhuma licença ativa para o usuário "${username}" com o produto "${product}".\n\nVerifique se:\n• O nome do usuário está correto\n• O produto está correto\n• O usuário possui uma licença ativa`,
+              `Não foi encontrada nenhuma key ativa para o usuário "${username}" com o produto "${product}".\n\nVerifique se:\n• O nome do usuário está correto\n• O produto está correto\n• O usuário possui uma key ativa`,
             )
           } else {
             alert.error("Erro na Renovação", response.error)
           }
         } else {
-          alert.success("Licença Renovada!", `Usuário: ${username}\nProduto: ${product}\nDias adicionados: ${days}`)
+          alert.success("Key Renovada!", `Usuário: ${username}\nProduto: ${product}\nDias adicionados: ${days}`)
           router.push("/dashboard")
         }
       } catch (error) {
@@ -70,18 +70,18 @@ export default function RenewKeyPage() {
           if (error.status === 404) {
             alert.error(
               "Usuário Não Encontrado",
-              `Não foi encontrada nenhuma licença para o usuário "${username}" com o produto "${product}".\n\nVerifique se os dados estão corretos e se o usuário possui uma licença ativa no sistema.`,
+              `Não foi encontrada nenhuma key para o usuário "${username}" com o produto "${product}".\n\nVerifique se os dados estão corretos e se o usuário possui uma key ativa no sistema.`,
             )
           } else if (error.message?.includes("Nenhuma key encontrada")) {
             alert.error(
-              "Licença Não Encontrada",
-              `O usuário "${username}" não possui licenças ativas para o produto "${product}".\n\nVerifique se:\n• O nome do usuário está correto\n• O produto está correto\n• A licença não expirou`,
+              "Key Não Encontrada",
+              `O usuário "${username}" não possui keys ativas para o produto "${product}".\n\nVerifique se:\n• O nome do usuário está correto\n• O produto está correto\n• A key não expirou`,
             )
           } else {
-            alert.error("Erro Inesperado", error.message || "Não foi possível renovar a licença.")
+            alert.error("Erro Inesperado", error.message || "Não foi possível renovar a key.")
           }
         } else {
-          alert.error("Erro Inesperado", "Não foi possível renovar a licença.")
+          alert.error("Erro Inesperado", "Não foi possível renovar a key.")
         }
       } finally {
         setLoading(false)
@@ -92,14 +92,14 @@ export default function RenewKeyPage() {
   return (
     <AuthGuard>
       <div className="app-bg min-h-screen">
-        <AppHeader title="Renovar Licença" showNav={false} />
+        <AppHeader title="Renovar Key" showNav={false} />
 
         <main className="container mx-auto px-4 py-8">
           <Card className="glass-card max-w-2xl mx-auto border-0">
             <CardHeader>
-              <CardTitle>Renovar Licença Existente</CardTitle>
+              <CardTitle>Renovar Key Existente</CardTitle>
               <CardDescription>
-                Informe o usuário e o produto para adicionar mais dias à licença existente.
+                Informe o usuário e o produto para adicionar mais dias à key existente.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -171,7 +171,7 @@ export default function RenewKeyPage() {
                         Renovando...
                       </>
                     ) : (
-                      "Renovar Licença"
+                      "Renovar Key"
                     )}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => router.push("/dashboard")}>

@@ -31,16 +31,16 @@ export function AppHeader({ title, showLogout = true, showNav = true }: AppHeade
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6 gap-3">
+    <header className="sticky top-0 z-40 border-b border-[#222630] bg-[#090a0d]/90 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-6 gap-3">
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-ring"
+          className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none"
           aria-label="Ir para o dashboard"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/25">
-            <KeyRound className="h-4.5 w-4.5 text-primary-foreground" />
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#111318] border border-[#222630] text-[#ededed]">
+            <KeyRound className="h-4 w-4" />
           </span>
           <span className="flex flex-col items-start leading-none">
             <span className="text-sm font-semibold tracking-tight">ianoba</span>

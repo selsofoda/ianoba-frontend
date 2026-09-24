@@ -1,13 +1,13 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://ianobacloud.com/api"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333"
 
-export interface ApiResponse<T = any> {
+export type ApiResponse<T = any> = {
   success?: boolean
   error?: string
   message?: string
   data?: T
   token?: string
   key?: string
-}
+} & (T extends object ? T : Record<string, any>)
 
 export class ApiError extends Error {
   constructor(
@@ -26,8 +26,8 @@ async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}):
 
   const defaultHeaders: Record<string, string> = {}
 
-  // Só adiciona Content-Type se houver body na requisição
-  if (options.body) {
+  // Só adiciona Content-Type se houver body na requisição e não for FormData
+  if (options.body && !(typeof FormData !== "undefined" && options.body instanceof FormData)) {
     defaultHeaders["Content-Type"] = "application/json"
   }
 
@@ -176,4 +176,162 @@ export const api = {
       },
     })
   },
+
+  // Telemetria & Dashboard Stats
+  getStats: async (token: string) => {
+    return apiRequest<{
+      summary: {
+        totalKeys: number
+        activeKeys: number
+        expiringKeys: number
+        expiredKeys: number
+        unboundKeys: number
+        totalStarts: number
+        totalActivations: number
+        totalBlocked: number
+        blockedHwid: number
+        blockedExpired: number
+        blockedInvalidKey: number
+        totalProducts: number
+      }
+      activityChart: Array<{ date: string; iniciou: number; ativou: number; bloqueado: number }>
+      recentLogs: Array<{
+        _id: string
+        action: string
+        type: 'success' | 'warning' | 'error' | 'info'
+        message: string
+        username?: string
+        product?: string
+        key?: string
+        hwid?: string
+        ip?: string
+        metadata?: Record<string, any>
+        createdAt: string
+      }>
+      topProducts: Array<{ name: string; count: number }>
+    }>("/stats", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
+  // Central de Logs
+  getLogs: async (
+    token: string,
+    filters?: {
+      page?: number
+      limit?: number
+      action?: string
+      type?: string
+      product?: string
+      username?: string
+      search?: string
+    }
+  ) => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append("page", String(filters.page))
+    if (filters?.limit) params.append("limit", String(filters.limit))
+    if (filters?.action && filters.action !== "ALL") params.append("action", filters.action)
+    if (filters?.type && filters.type !== "ALL") params.append("type", filters.type)
+    if (filters?.product && filters.product !== "ALL") params.append("product", filters.product)
+    if (filters?.username) params.append("username", filters.username)
+    if (filters?.search) params.append("search", filters.search)
+
+    const queryString = params.toString()
+    const endpoint = queryString ? `/logs?${queryString}` : "/logs"
+
+    return apiRequest<{
+      logs: Array<{
+        _id: string
+        action: string
+        type: 'success' | 'warning' | 'error' | 'info'
+        message: string
+        username?: string
+        product?: string
+        key?: string
+        hwid?: string
+        ip?: string
+        userAgent?: string
+        metadata?: Record<string, any>
+        createdAt: string
+      }>
+      total: number
+      page: number
+      limit: number
+      totalPages: number
+    }>(endpoint, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
+  // Gerenciamento de Produtos
+  listProducts: async (token: string) => {
+    return apiRequest<Array<{
+      _id: string
+      name: string
+      version: string
+      changelog: string
+      url: string
+      updatedAt?: string
+    }>>("/products", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
+  updateProduct: async (
+    token: string,
+    data: {
+      product: string
+      version: string
+      changelog: string
+      url?: string
+    }
+  ) => {
+    return apiRequest("/update", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    })
+  },
+
+  deleteProduct: async (token: string, product: string) => {
+    const params = new URLSearchParams()
+    params.append("product", product)
+
+    return apiRequest(`/delete_product?${params.toString()}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
+  uploadExecutable: async (token: string, file: File) => {
+    const formData = new FormData()
+    formData.append("file", file)
+
+    return apiRequest<{
+      success: boolean
+      filename: string
+      url: string
+      size: number
+    }>("/upload", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    })
+  },
 }
+

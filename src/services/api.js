@@ -7,7 +7,7 @@
  * @param {object} options - objeto do fetch (method, headers, body, etc.)
  */
 export async function fetchWithAuth(token, endpoint, options = {}) {
-  const baseUrl = "https://ianobacloud.com/api" // ajuste conforme necessário
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333"
   const url = `${baseUrl}${endpoint}`
 
   // Garante que o objeto "headers" exista

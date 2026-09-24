@@ -27,17 +27,17 @@ export function getKeyStatus(expireAt: string | Date): KeyStatusInfo {
   const daysLeft = differenceInCalendarDays(date, new Date())
 
   if (daysLeft < 0) {
-    return { status: "expired", label: "Expirada", className: "bg-destructive/15 text-destructive border-destructive/30", daysLeft }
+    return { status: "expired", label: "Expirada", className: "bg-rose-500/15 text-rose-400 border-rose-500/30 font-medium", daysLeft }
   }
   if (daysLeft <= 7) {
     return {
       status: "expiring",
       label: daysLeft === 0 ? "Expira hoje" : `Expira em ${daysLeft}d`,
-      className: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+      className: "bg-amber-500/15 text-amber-400 border-amber-500/30 font-medium",
       daysLeft,
     }
   }
-  return { status: "active", label: "Ativa", className: "bg-primary/15 text-primary dark:text-primary border-primary/30", daysLeft }
+  return { status: "active", label: "Ativa", className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 font-medium", daysLeft }
 }
 
 /** Formata data/hora no padrão brasileiro, ex.: 22/09/2026 14:30 */

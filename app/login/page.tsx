@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PasswordInput } from "@/components/ui/password-input"
 import { Spinner } from "@/components/ui/spinner"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { api, ApiError } from "@/lib/api"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAlert } from "@/hooks/use-alert"
@@ -67,20 +67,16 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
 
-      <Card className="glass-card w-full max-w-md border-0 shadow-2xl">
-        <CardHeader className="text-center space-y-3 pb-6 pt-8">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-xl shadow-primary/30">
-            <KeyRound className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <div>
-            <CardTitle className="text-2xl font-bold tracking-tight brand-gradient-text">ianoba services</CardTitle>
-            <CardDescription className="mt-1.5">Faça login para acessar o sistema</CardDescription>
+      <Card className="w-full max-w-md border border-[#222630] bg-[#111318] shadow-2xl rounded-2xl">
+        <CardHeader className="text-center pb-2 pt-8">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#161e28] border border-[#202936] text-[#e2e8f0]">
+            <KeyRound className="h-6 w-6" />
           </div>
         </CardHeader>
         <CardContent className="pb-8">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="user">Usuário</Label>
+              <Label htmlFor="user" className="text-xs text-[#8a8f98]">Usuário</Label>
               <Input
                 id="user"
                 name="username"
@@ -90,13 +86,13 @@ export default function LoginPage() {
                 autoFocus
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
-                className="h-11 bg-background/60"
+                className="h-10 bg-[#090a0d] border-[#222630] text-sm text-[#ededed] rounded-lg"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password" className="text-xs text-[#8a8f98]">Senha</Label>
               <PasswordInput
                 id="password"
                 name="password"
@@ -104,14 +100,14 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
-                className="h-11 bg-background/60"
+                className="h-10 bg-[#090a0d] border-[#222630] text-sm text-[#ededed] rounded-lg"
                 required
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full h-11 bg-gradient-to-r from-primary to-secondary text-primary-foreground font-medium shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:brightness-110"
+              className="w-full h-10 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg transition-colors shadow-sm"
               disabled={loading}
             >
               {loading ? (
