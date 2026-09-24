@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://ianobacloud.com/api"
 
 export type ApiResponse<T = any> = {
   success?: boolean
