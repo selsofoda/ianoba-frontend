@@ -19,6 +19,46 @@ export class ApiError extends Error {
   }
 }
 
+function b64urlDecode(input: string): string {
+  let s = input.replace(/-/g, "+").replace(/_/g, "/")
+  const pad = s.length % 4
+  if (pad) s += "=".repeat(4 - pad)
+  return atob(s)
+}
+
+/**
+ * Valida um JWT no cliente: precisa ter 3 partes e, havendo "exp",
+ * ainda nao pode ter expirado (margem de 5s). Token malformado => invalido.
+ */
+export function isTokenValid(token: string | null | undefined): boolean {
+  if (!token) return false
+  const parts = token.split(".")
+  if (parts.length !== 3) return false
+  try {
+    const payload = JSON.parse(b64urlDecode(parts[1]))
+    if (typeof payload.exp === "number") {
+      return Date.now() < payload.exp * 1000 - 5000
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Tratamento central de falha de autenticacao (401): limpa o token e
+ * redireciona para /login. Cobre TODOS os endpoints de uma vez.
+ */
+function handleAuthFailure(): void {
+  if (typeof window === "undefined") return
+  try {
+    localStorage.removeItem("token")
+  } catch {}
+  if (!window.location.pathname.startsWith("/login")) {
+    window.location.replace("/login")
+  }
+}
+
 async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const baseUrl = API_BASE_URL.replace(/\/+$/, "") // Remove barras finais da base URL
   const cleanEndpoint = endpoint.replace(/^\/+/, "") // Remove barras iniciais do endpoint
@@ -60,6 +100,10 @@ async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}):
     }
 
     if (!response.ok) {
+      // Falha de autenticacao: logout central + redirect (qualquer endpoint).
+      if (response.status === 401) {
+        handleAuthFailure()
+      }
       throw new ApiError(response.status, data.error || `HTTP ${response.status}`)
     }
 

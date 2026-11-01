@@ -6,16 +6,24 @@ import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Loading } from "@/components/ui/loading"
+import { isTokenValid } from "@/lib/api"
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { token, isLoading } = useAuth()
+  const { token, isLoading, logout } = useAuth()
   const router = useRouter()
 
+  // Token presente porem expirado/malformado NAO e autenticado.
+  const authenticated = !isLoading && isTokenValid(token)
+
   useEffect(() => {
-    if (!isLoading && !token) {
-      router.push("/login")
+    if (isLoading) return
+
+    if (!isTokenValid(token)) {
+      // Ausente, malformado ou expirado -> limpa e volta pro login.
+      if (token) logout()
+      router.replace("/login")
     }
-  }, [token, isLoading, router])
+  }, [token, isLoading, logout, router])
 
   if (isLoading) {
     return (
@@ -25,7 +33,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!token) {
+  if (!authenticated) {
     return null
   }
 

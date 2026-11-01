@@ -84,6 +84,20 @@ export default function DashboardPage() {
         api.listProducts(token)
       ])
 
+      // Promise.allSettled NUNCA rejeita -> o catch com o 401 abaixo e codigo
+      // morto. Trate aqui os resultados rejeitados: se qualquer chamada deu 401
+      // (token invalido/expirado), desloga e volta pro login. Sem isto, a tela
+      // fica vazia e o logout automatico nunca dispara.
+      const unauthorized = [keysRes, statsRes, prodsRes].some(
+        (r) => r.status === "rejected" && r.reason instanceof ApiError && r.reason.status === 401
+      )
+      if (unauthorized) {
+        toast.warning("Sessão expirada. Faça login novamente.")
+        logout()
+        router.push("/login")
+        return
+      }
+
       // Keys
       if (keysRes.status === "fulfilled" && keysRes.value) {
         const kData = Array.isArray(keysRes.value) ? keysRes.value : (keysRes.value as any)?.data || []
