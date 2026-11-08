@@ -27,6 +27,17 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { CopyButton } from "@/components/copy-button"
 import { cn } from "@/lib/utils"
 import { api, ApiError } from "@/lib/api"
@@ -46,6 +57,8 @@ export function LogsView({ token }: LogsViewProps) {
   const [search, setSearch] = useState("")
   const [selectedAction, setSelectedAction] = useState<string>("ALL")
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const actionFilters = [
     { id: "ALL", label: "Todos os Eventos" },
@@ -111,6 +124,25 @@ export function LogsView({ token }: LogsViewProps) {
     setExpandedLogId(expandedLogId === id ? null : id)
   }
 
+  const handleDeleteAll = async () => {
+    if (!token) return
+
+    try {
+      setDeleting(true)
+      const res = await api.deleteLogs(token, { confirm: "DELETE_ALL" })
+      const deleted = typeof res.deleted === "number" ? res.deleted : 0
+      toast.success(`${deleted} ${deleted === 1 ? "registro apagado" : "registros apagados"}`)
+      setConfirmDeleteOpen(false)
+      setPage(1)
+      setExpandedLogId(null)
+      await loadLogs(1)
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Erro ao apagar os logs")
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header e Busca */}
@@ -137,6 +169,45 @@ export function LogsView({ token }: LogsViewProps) {
               <RefreshCw className={cn("h-3.5 w-3.5 mr-2", loading && "animate-spin text-white")} />
               Atualizar
             </Button>
+
+            <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={deleting || total === 0}
+                  className="rounded-lg border-rose-900/50 text-rose-400 hover:bg-rose-950/30 hover:text-rose-300 h-9 text-xs"
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-2" />
+                  {deleting ? "Apagando..." : "Apagar logs"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-2xl border border-[#222630] bg-[#111318]">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-white">Apagar todos os logs?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-[#8a8f98]">
+                    Isso remove permanentemente <span className="font-semibold text-white">{total}</span>{" "}
+                    {total === 1 ? "registro" : "registros"} da central de logs. A ação fica registrada na auditoria
+                    como <span className="font-mono text-[#ededed]">LOGS_DELETADOS</span>.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deleting} className="rounded-lg border-[#222630]">
+                    Cancelar
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={deleting}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleDeleteAll()
+                    }}
+                    className="rounded-lg bg-rose-600 text-white hover:bg-rose-500"
+                  >
+                    {deleting ? "Apagando..." : "Apagar tudo"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
 

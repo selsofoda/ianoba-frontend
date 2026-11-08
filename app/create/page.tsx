@@ -6,6 +6,13 @@ import { AppHeader } from "@/components/app-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { CopyButton } from "@/components/copy-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,7 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { api, ApiError } from "@/lib/api"
 import { useAlert } from "@/hooks/use-alert"
@@ -40,6 +47,38 @@ export default function CreateKeyPage() {
   const [loading, setLoading] = useState(false)
   const [createdKey, setCreatedKey] = useState<string | null>(null)
   const [keyCopied, setKeyCopied] = useState(false)
+  const [products, setProducts] = useState<Array<{ _id?: string; name: string; version?: string }>>([])
+  const [loadingProducts, setLoadingProducts] = useState(false)
+
+  // Carrega os produtos cadastrados para o select
+  useEffect(() => {
+    if (!token) return
+
+    let cancelled = false
+    setLoadingProducts(true)
+
+    api
+      .listProducts(token)
+      .then((res) => {
+        if (cancelled) return
+        const list = Array.isArray(res)
+          ? res
+          : Array.isArray((res as any)?.data)
+            ? (res as any).data
+            : []
+        setProducts(list.filter((p: any) => p && p.name))
+      })
+      .catch(() => {
+        if (!cancelled) setProducts([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingProducts(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [token])
 
   const daysNumber = Number.parseInt(days, 10)
   const daysInvalid = days !== "" && (isNaN(daysNumber) || daysNumber < 1 || daysNumber > 3650)
@@ -136,15 +175,41 @@ export default function CreateKeyPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="product">Produto *</Label>
-                    <Input
-                      id="product"
-                      type="text"
-                      value={product}
-                      onChange={(e) => setProduct(e.target.value.toUpperCase())}
-                      placeholder="Ex: CADASTRO"
-                      autoComplete="off"
-                      required
-                    />
+                    {loadingProducts ? (
+                      <div className="flex h-9 items-center rounded-md border border-input bg-transparent px-3 text-sm text-muted-foreground">
+                        <Spinner className="mr-2 h-3.5 w-3.5" />
+                        Carregando produtos...
+                      </div>
+                    ) : products.length > 0 ? (
+                      <Select value={product} onValueChange={setProduct}>
+                        <SelectTrigger id="product" className="w-full">
+                          <SelectValue placeholder="Selecione o produto" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {products.map((p) => (
+                            <SelectItem key={p._id || p.name} value={p.name}>
+                              {p.name}
+                              {p.version ? ` · v${p.version}` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <>
+                        <Input
+                          id="product"
+                          type="text"
+                          value={product}
+                          onChange={(e) => setProduct(e.target.value.toUpperCase())}
+                          placeholder="Ex: CADASTRO"
+                          autoComplete="off"
+                          required
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Nenhum produto cadastrado. Cadastre em Produtos ou digite o nome manualmente.
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
 

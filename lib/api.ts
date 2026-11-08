@@ -313,6 +313,37 @@ export const api = {
     })
   },
 
+  // Apagar logs (sem filtro exige confirm=DELETE_ALL)
+  deleteLogs: async (
+    token: string,
+    filters?: {
+      action?: string
+      type?: string
+      product?: string
+      username?: string
+      before?: string
+      confirm?: string
+    },
+  ) => {
+    const params = new URLSearchParams()
+    if (filters?.action && filters.action !== "ALL") params.append("action", filters.action)
+    if (filters?.type && filters.type !== "ALL") params.append("type", filters.type)
+    if (filters?.product && filters.product !== "ALL") params.append("product", filters.product)
+    if (filters?.username) params.append("username", filters.username)
+    if (filters?.before) params.append("before", filters.before)
+    if (filters?.confirm) params.append("confirm", filters.confirm)
+
+    const queryString = params.toString()
+    const endpoint = queryString ? `/logs?${queryString}` : "/logs"
+
+    return apiRequest<{ success: boolean; deleted: number; filters: Record<string, any> }>(endpoint, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
   // Gerenciamento de Produtos
   listProducts: async (token: string) => {
     return apiRequest<Array<{

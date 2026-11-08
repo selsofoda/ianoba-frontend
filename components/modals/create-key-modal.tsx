@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { CopyButton } from "@/components/copy-button"
 import { api, ApiError } from "@/lib/api"
@@ -27,6 +34,12 @@ interface CreateKeyModalProps {
 
 const QUICK_DAYS = [7, 30, 90, 180, 365]
 
+type ProductOption = {
+  _id?: string
+  name: string
+  version?: string
+}
+
 export function CreateKeyModal({ open, onOpenChange, token, onSuccess }: CreateKeyModalProps) {
   const [username, setUsername] = useState("")
   const [days, setDays] = useState("30")
@@ -34,6 +47,38 @@ export function CreateKeyModal({ open, onOpenChange, token, onSuccess }: CreateK
   const [maxThreads, setMaxThreads] = useState("5")
   const [loading, setLoading] = useState(false)
   const [createdKey, setCreatedKey] = useState<string | null>(null)
+  const [products, setProducts] = useState<ProductOption[]>([])
+  const [loadingProducts, setLoadingProducts] = useState(false)
+
+  // Carrega os produtos existentes para o select
+  useEffect(() => {
+    if (!open || !token) return
+
+    let cancelled = false
+    setLoadingProducts(true)
+
+    api
+      .listProducts(token)
+      .then((res) => {
+        if (cancelled) return
+        const list = Array.isArray(res)
+          ? res
+          : Array.isArray((res as any)?.data)
+            ? (res as any).data
+            : []
+        setProducts(list.filter((p: any) => p && p.name))
+      })
+      .catch(() => {
+        if (!cancelled) setProducts([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingProducts(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [open, token])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -119,13 +164,39 @@ export function CreateKeyModal({ open, onOpenChange, token, onSuccess }: CreateK
 
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">Produto *</Label>
-              <Input
-                value={product}
-                onChange={(e) => setProduct(e.target.value.toUpperCase())}
-                placeholder="Ex: CADASTRO"
-                className="h-10 rounded-xl bg-background/60"
-                required
-              />
+              {loadingProducts ? (
+                <div className="h-10 rounded-xl bg-background/60 border border-border/60 flex items-center px-3 text-xs text-muted-foreground">
+                  <Spinner className="h-3.5 w-3.5 mr-2" />
+                  Carregando produtos...
+                </div>
+              ) : products.length > 0 ? (
+                <Select value={product} onValueChange={setProduct}>
+                  <SelectTrigger className="h-10 w-full rounded-xl bg-background/60">
+                    <SelectValue placeholder="Selecione o produto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {products.map((p) => (
+                      <SelectItem key={p._id || p.name} value={p.name}>
+                        {p.name}
+                        {p.version ? ` · v${p.version}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <>
+                  <Input
+                    value={product}
+                    onChange={(e) => setProduct(e.target.value.toUpperCase())}
+                    placeholder="Ex: CADASTRO"
+                    className="h-10 rounded-xl bg-background/60"
+                    required
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Nenhum produto cadastrado. Cadastre em Produtos ou digite o nome manualmente.
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
